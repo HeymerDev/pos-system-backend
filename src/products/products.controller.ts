@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ProductsService } from './products.service.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
 import { UpdateProductDto } from './dto/update-product.dto.js';
+import { FilterProductQueryDto } from './dto/filter-product.dto.js';
 
 @Controller('products')
 export class ProductsController {
@@ -27,11 +29,13 @@ export class ProductsController {
   }
 
   @Get()
-  async findAll() {
-    const data = await this.productsService.findAll();
+  async findAll(@Query() query: FilterProductQueryDto) {
+    const categoryId = query.category_id ? query.category_id : null;
+    const { data, total } = await this.productsService.findAll(categoryId);
     return {
       status: 'success',
       data,
+      total,
     };
   }
 
