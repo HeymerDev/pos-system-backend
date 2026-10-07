@@ -31,7 +31,14 @@ export class ProductsController {
   @Get()
   async findAll(@Query() query: FilterProductQueryDto) {
     const categoryId = query.category_id ? query.category_id : null;
-    const { data, total } = await this.productsService.findAll(categoryId);
+    const take = query.total ? query.total : 10;
+    const skip = query.offset ? query.offset : 0;
+
+    const { data, total } = await this.productsService.findAll(
+      categoryId,
+      take,
+      skip,
+    );
     return {
       status: 'success',
       data,
