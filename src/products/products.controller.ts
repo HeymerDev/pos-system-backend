@@ -48,8 +48,12 @@ export class ProductsController {
   }
 
   @Get(':id')
-  findOne(@Param('id', IdValidationPipe) id: string) {
-    return this.productsService.findOne(+id);
+  async findOne(@Param('id', IdValidationPipe) id: string) {
+    const { data } = await this.productsService.findOne(+id);
+    return {
+      status: 'success',
+      data,
+    };
   }
 
   @Patch(':id')
