@@ -71,7 +71,12 @@ export class ProductsController {
   }
 
   @Delete(':id')
-  remove(@Param('id', IdValidationPipe) id: string) {
-    return this.productsService.remove(+id);
+  async remove(@Param('id', IdValidationPipe) id: string) {
+    const message = await this.productsService.remove(+id);
+
+    return {
+      status: 'success',
+      message,
+    };
   }
 }
