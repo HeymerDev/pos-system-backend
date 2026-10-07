@@ -60,6 +60,13 @@ export class ProductsService {
         category: true,
       },
     });
+
+    if (!product) {
+      let errors: string[] = [];
+      errors.push('Product not found');
+      throw new NotFoundException(errors);
+    }
+
     return { data: product };
   }
 
