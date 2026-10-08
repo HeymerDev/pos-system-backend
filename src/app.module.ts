@@ -6,6 +6,7 @@ import { AppService } from './app.service.js';
 import { CategoriesModule } from './categories/categories.module.js';
 import { typeOrmConfig } from './config/typeorm.config.js';
 import { ProductsModule } from './products/products.module.js';
+import { TransactionsModule } from './transactions/transactions.module.js';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ProductsModule } from './products/products.module.js';
     }),
     CategoriesModule,
     ProductsModule,
+    TransactionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
