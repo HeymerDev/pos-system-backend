@@ -1,114 +1,326 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# POS System — Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST para un sistema de punto de venta (POS) construida con **NestJS**, **TypeORM** y **PostgreSQL**. Permite gestionar categorías, productos con control de inventario y registrar ventas (transacciones) que descuentan stock de forma atómica.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+> Estado: en desarrollo. Categorías y productos tienen CRUD completo; de transacciones solo está implementada la creación (ver [Roadmap](#roadmap)).
 
-## Description
+## Tabla de contenidos
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- [Stack](#stack)
+- [Requisitos](#requisitos)
+- [Instalación](#instalación)
+- [Variables de entorno](#variables-de-entorno)
+- [Scripts](#scripts)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Modelo de datos](#modelo-de-datos)
+- [API](#api)
+  - [Categorías](#categorías)
+  - [Productos](#productos)
+  - [Transacciones](#transacciones)
+  - [Errores](#errores)
+- [Tests](#tests)
+- [Roadmap](#roadmap)
 
-## Project setup
+## Stack
 
-```bash
-$ pnpm install
-```
+| Capa          | Tecnología                                  |
+| ------------- | ------------------------------------------- |
+| Runtime       | Node.js 22+ (ES Modules)                    |
+| Framework     | NestJS 12                                   |
+| ORM           | TypeORM 1.x                                 |
+| Base de datos | PostgreSQL                                  |
+| Validación    | class-validator + class-transformer         |
+| Tests         | Vitest + Supertest                          |
+| Lint / format | oxlint + Prettier                           |
+| Gestor        | pnpm                                        |
 
-## Compile and run the project
+## Requisitos
 
-```bash
-# development
-$ pnpm run start
+- Node.js 22 o superior
+- pnpm
+- Una base de datos PostgreSQL **con SSL habilitado** (por ejemplo Supabase o Neon). La conexión está configurada con `ssl: true`, así que un Postgres local sin SSL rechazará la conexión.
 
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
-```
-
-## Run tests
+## Instalación
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+git clone https://github.com/HeymerDev/pos-system-backend.git
+cd pos-system-backend
+pnpm install
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Crea un archivo `.env` en la raíz (ver siguiente sección) y levanta el servidor:
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+pnpm run start:dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+La API queda disponible en `http://localhost:4000`.
 
-## Observability
+## Variables de entorno
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+| Variable       | Requerida | Default | Descripción                                                   |
+| -------------- | --------- | ------- | ------------------------------------------------------------- |
+| `DATABASE_URL` | Sí        | —       | Cadena de conexión de PostgreSQL                              |
+| `PORT`         | No        | `4000`  | Puerto HTTP del servidor                                      |
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+Ejemplo de `.env`:
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+```env
+DATABASE_URL=postgresql://usuario:password@host:5432/pos_db
+PORT=4000
+```
 
-## Resources
+> **Importante:** TypeORM está configurado con `synchronize: true`, por lo que crea y modifica las tablas automáticamente a partir de las entidades. Es cómodo en desarrollo, pero **no debe usarse contra una base de datos de producción** (puede borrar columnas y datos).
 
-Check out a few resources that may come in handy when working with NestJS:
+## Scripts
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observer](https://observer.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+| Comando                | Descripción                                    |
+| ---------------------- | ---------------------------------------------- |
+| `pnpm run start:dev`   | Servidor en modo watch                         |
+| `pnpm run start:debug` | Servidor en modo debug + watch                 |
+| `pnpm run build`       | Compila a `dist/`                              |
+| `pnpm run start:prod`  | Ejecuta la versión compilada (`dist/main`)     |
+| `pnpm run lint`        | Lint con oxlint                                |
+| `pnpm run format`      | Formatea con Prettier                          |
+| `pnpm run test`        | Tests unitarios                                |
+| `pnpm run test:watch`  | Tests unitarios en modo watch                  |
+| `pnpm run test:cov`    | Tests con reporte de cobertura                 |
+| `pnpm run test:e2e`    | Tests end-to-end (requieren base de datos)     |
 
-## Support
+## Estructura del proyecto
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```
+src/
+├── main.ts                      # Bootstrap + ValidationPipe global (whitelist)
+├── app.module.ts                # Módulo raíz: Config, TypeORM y módulos de dominio
+├── config/
+│   └── typeorm.config.ts        # Conexión a PostgreSQL
+├── common/
+│   └── pipes/
+│       └── id-validation-pipe/  # Valida que los :id sean enteros
+├── categories/                  # CRUD de categorías
+├── products/                    # CRUD de productos + filtro y paginación
+└── transactions/                # Ventas y detalle de cada venta
+test/
+└── app.e2e-spec.ts
+```
 
-## Stay in touch
+Cada módulo de dominio sigue la estructura estándar de Nest: `*.module.ts`, `*.controller.ts`, `*.service.ts`, `dto/` y `entities/`.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Modelo de datos
 
-## License
+```mermaid
+erDiagram
+    CATEGORY ||--o{ PRODUCT : "tiene"
+    PRODUCT ||--o{ TRANSACTION_CONTENT : "se vende en"
+    TRANSACTION ||--|{ TRANSACTION_CONTENT : "contiene"
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+    CATEGORY {
+        int id PK
+        varchar(55) name
+    }
+    PRODUCT {
+        int id PK
+        varchar(100) name
+        varchar(255) image_url "default: default.svg"
+        decimal(10_2) price
+        int stock "default: 0"
+        int categoryId FK
+    }
+    TRANSACTION {
+        int id PK
+        decimal(10_2) total
+        timestamp transactionDate "default: now"
+    }
+    TRANSACTION_CONTENT {
+        int id PK
+        int quantity
+        decimal(10_2) price
+        int productId FK
+        int transactionId FK
+    }
+```
+
+## API
+
+Base URL: `http://localhost:4000`
+
+Todas las peticiones con cuerpo usan `Content-Type: application/json`. El `ValidationPipe` global tiene `whitelist: true`, así que cualquier propiedad que no esté definida en el DTO se descarta silenciosamente.
+
+### Categorías
+
+| Método   | Ruta              | Descripción                  |
+| -------- | ----------------- | ---------------------------- |
+| `POST`   | `/categories`     | Crear categoría              |
+| `GET`    | `/categories`     | Listar categorías            |
+| `GET`    | `/categories/:id` | Obtener una categoría        |
+| `PATCH`  | `/categories/:id` | Actualizar nombre            |
+| `DELETE` | `/categories/:id` | Eliminar categoría           |
+
+**Crear / actualizar**
+
+```json
+{ "name": "Bebidas" }
+```
+
+| Campo  | Tipo   | Reglas                  |
+| ------ | ------ | ----------------------- |
+| `name` | string | Requerido, no vacío     |
+
+**Respuesta de `POST /categories`** (`201`)
+
+```json
+{
+  "status": "success",
+  "message": "Category created successfully",
+  "data": { "id": 1, "name": "Bebidas" }
+}
+```
+
+`GET /categories` y `GET /categories/:id` devuelven la entidad (o el arreglo) directamente, sin envoltorio.
+
+### Productos
+
+| Método   | Ruta            | Descripción                                  |
+| -------- | --------------- | -------------------------------------------- |
+| `POST`   | `/products`     | Crear producto                               |
+| `GET`    | `/products`     | Listar productos (filtro + paginación)       |
+| `GET`    | `/products/:id` | Obtener un producto con su categoría         |
+| `PATCH`  | `/products/:id` | Actualizar producto (campos parciales)       |
+| `DELETE` | `/products/:id` | Eliminar producto                            |
+
+**Crear producto**
+
+```json
+{
+  "name": "Coca-Cola 600ml",
+  "image_url": "coca-cola.png",
+  "price": 18.5,
+  "stock": 40,
+  "categoryId": 1
+}
+```
+
+| Campo        | Tipo   | Reglas                                           |
+| ------------ | ------ | ------------------------------------------------ |
+| `name`       | string | Requerido                                        |
+| `image_url`  | string | Opcional (default `default.svg`)                 |
+| `price`      | number | Requerido, positivo, máx. 2 decimales            |
+| `stock`      | number | Requerido, entero                                |
+| `categoryId` | number | Requerido, entero, la categoría debe existir     |
+
+En `PATCH` todos los campos son opcionales; si se envía `categoryId`, se valida que la categoría exista.
+
+**Listar con filtros** — `GET /products?category_id=1&total=10&offset=0`
+
+| Query param   | Default | Descripción                         |
+| ------------- | ------- | ----------------------------------- |
+| `category_id` | —       | Filtra por categoría                |
+| `total`       | `10`    | Cantidad de resultados (`take`)     |
+| `offset`      | `0`     | Resultados a saltar (`skip`)        |
+
+Los productos se ordenan por `id` descendente.
+
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 3,
+      "name": "Coca-Cola 600ml",
+      "image_url": "coca-cola.png",
+      "price": "18.50",
+      "stock": 40,
+      "category": { "id": 1, "name": "Bebidas" }
+    }
+  ],
+  "total": 1
+}
+```
+
+> `price` llega como string porque PostgreSQL devuelve los `decimal` como texto para no perder precisión.
+
+### Transacciones
+
+| Método   | Ruta                | Estado            |
+| -------- | ------------------- | ----------------- |
+| `POST`   | `/transactions`     | Implementado      |
+| `GET`    | `/transactions`     | Pendiente (stub)  |
+| `GET`    | `/transactions/:id` | Pendiente (stub)  |
+| `PATCH`  | `/transactions/:id` | Pendiente (stub)  |
+| `DELETE` | `/transactions/:id` | Pendiente (stub)  |
+
+**Registrar una venta**
+
+```json
+{
+  "total": 55.5,
+  "contents": [
+    { "productId": 3, "quantity": 2, "price": 18.5 },
+    { "productId": 7, "quantity": 1, "price": 18.5 }
+  ]
+}
+```
+
+| Campo                  | Tipo   | Reglas                         |
+| ---------------------- | ------ | ------------------------------ |
+| `total`                | number | Requerido                      |
+| `contents`             | array  | Requerido, al menos un ítem    |
+| `contents[].productId` | number | Requerido, entero              |
+| `contents[].quantity`  | number | Requerido, entero              |
+| `contents[].price`     | number | Requerido                      |
+
+La venta se ejecuta dentro de una **transacción de base de datos**: por cada ítem se verifica que el producto exista y tenga stock suficiente, se descuenta el stock y se guarda el detalle. Si algún ítem falla, se revierte todo.
+
+```json
+{
+  "status": "success",
+  "message": "Transaction created successfully"
+}
+```
+
+### Errores
+
+Los errores siguen el formato estándar de NestJS:
+
+```json
+{
+  "message": ["Category with ID 99 not found"],
+  "error": "Not Found",
+  "statusCode": 404
+}
+```
+
+| Código | Cuándo ocurre                                                              |
+| ------ | -------------------------------------------------------------------------- |
+| `400`  | Body o query inválidos, `:id` no numérico, stock insuficiente              |
+| `404`  | Categoría, producto o producto de una venta no encontrado                  |
+| `500`  | Error no controlado (por ejemplo, borrar una categoría que tiene productos) |
+
+## Tests
+
+```bash
+# unitarios
+pnpm run test
+
+# end-to-end (usa la base de datos de DATABASE_URL)
+pnpm run test:e2e
+
+# cobertura
+pnpm run test:cov
+```
+
+> Los specs actuales son los generados por el CLI de Nest y todavía no mockean los repositorios de TypeORM, por lo que la mayoría falla al resolver dependencias.
+
+## Roadmap
+
+- [ ] Listar y consultar transacciones (`GET /transactions`, `GET /transactions/:id`)
+- [ ] Anular una venta y devolver el stock
+- [ ] Calcular precio y total de la venta en el servidor
+- [ ] Mocks de repositorios en los tests unitarios
+- [ ] Migraciones de TypeORM en lugar de `synchronize`
+- [ ] Documentación interactiva con Swagger (`@nestjs/swagger`)
+
+## Licencia
+
+UNLICENSED — uso privado.
