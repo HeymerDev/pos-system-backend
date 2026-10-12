@@ -33,15 +33,15 @@ export class TransactionsService {
         });
 
         if (!product) {
-          throw new NotFoundException(
+          throw new NotFoundException([
             `Product with ID ${contents.productId} not found`,
-          );
+          ]);
         }
 
         if (product.stock < contents.quantity) {
-          throw new BadRequestException(
+          throw new BadRequestException([
             `Insufficient stock for product with ID ${contents.productId}`,
-          );
+          ]);
         }
 
         product.stock -= contents.quantity;
@@ -58,7 +58,6 @@ export class TransactionsService {
         await entityManager.save(transactionContent);
       }
     });
-    return 'Transaction created successfully';
   }
 
   findAll() {
