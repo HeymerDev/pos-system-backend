@@ -4,7 +4,7 @@ import { UpdateProductDto } from './dto/update-product.dto.js';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity.js';
 import { FindManyOptions, Repository } from 'typeorm';
-import { Category } from '../categories/entities/category.entity.js';
+import { CategoriesService } from '../categories/categories.service.js';
 
 @Injectable()
 export class ProductsService {
@@ -12,20 +12,13 @@ export class ProductsService {
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
 
-    @InjectRepository(Category)
-    private readonly categoryRepository: Repository<Category>,
+    private readonly categoriesService: CategoriesService,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
-    const category = await this.categoryRepository.findOne({
-      where: { id: createProductDto.categoryId },
-    });
-
-    if (!category) {
-      let errors: string[] = [];
-      errors.push('Category not found');
-      throw new NotFoundException(errors);
-    }
+    const category = await this.categoriesService.findOne(
+      createProductDto.categoryId,
+    );
 
     return this.productRepository.save({ ...createProductDto, category });
   }
@@ -62,9 +55,7 @@ export class ProductsService {
     });
 
     if (!product) {
-      let errors: string[] = [];
-      errors.push('Product not found');
-      throw new NotFoundException(errors);
+      throw new NotFoundException([`Product with ID ${id} not found`]);
     }
 
     return product;
@@ -75,16 +66,9 @@ export class ProductsService {
     Object.assign(product, updateProductDto);
 
     if (updateProductDto.categoryId) {
-      const category = await this.categoryRepository.findOne({
-        where: { id: updateProductDto.categoryId },
-      });
-
-      if (!category) {
-        let errors: string[] = [];
-        errors.push('Category not found');
-        throw new NotFoundException(errors);
-      }
-      product.category = category;
+      product.category = await this.categoriesService.findOne(
+        updateProductDto.categoryId,
+      );
     }
     await this.productRepository.save(product);
     return product;
@@ -93,6 +77,5 @@ export class ProductsService {
   async remove(id: number) {
     const product = await this.findOne(id);
     await this.productRepository.remove(product);
-    return 'Product deleted successfully';
   }
 }
