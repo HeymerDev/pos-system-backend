@@ -72,11 +72,11 @@ export class ProductsController {
 
   @Delete(':id')
   async remove(@Param('id', IdValidationPipe) id: string) {
-    const message = await this.productsService.remove(+id);
+    await this.productsService.remove(+id);
 
     return {
       status: 'success',
-      message,
+      message: 'Product deleted successfully',
     };
   }
 }
