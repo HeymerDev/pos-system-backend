@@ -55,11 +55,11 @@ export class CategoriesController {
 
   @Delete(':id')
   async remove(@Param('id', IdValidationPipe) id: string) {
-    const message = await this.categoriesService.remove(+id);
+    await this.categoriesService.remove(+id);
 
     return {
       status: 'success',
-      message,
+      message: 'Category deleted successfully',
     };
   }
 }
