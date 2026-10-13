@@ -13,20 +13,17 @@ import { CreateProductDto } from './dto/create-product.dto.js';
 import { UpdateProductDto } from './dto/update-product.dto.js';
 import { FilterProductQueryDto } from './dto/filter-product.dto.js';
 import { IdValidationPipe } from '../common/pipes/id-validation-pipe/id-validation-pipe.pipe.js';
+import { ResponseMessage } from '../common/decorators/response-message/response-message.decorator.js';
+import { PaginatedResult } from '../common/interceptors/response/paginated-result.js';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  async create(@Body() createProductDto: CreateProductDto) {
-    const data = await this.productsService.create(createProductDto);
-
-    return {
-      status: 'success',
-      message: 'Product created successfully',
-      data,
-    };
+  @ResponseMessage('Product created successfully')
+  create(@Body() createProductDto: CreateProductDto) {
+    return this.productsService.create(createProductDto);
   }
 
   @Get()
@@ -40,43 +37,26 @@ export class ProductsController {
       take,
       skip,
     );
-    return {
-      status: 'success',
-      data,
-      total,
-    };
+    return new PaginatedResult(data, total);
   }
 
   @Get(':id')
-  async findOne(@Param('id', IdValidationPipe) id: string) {
-    const data = await this.productsService.findOne(+id);
-    return {
-      status: 'success',
-      data,
-    };
+  findOne(@Param('id', IdValidationPipe) id: string) {
+    return this.productsService.findOne(+id);
   }
 
   @Patch(':id')
-  async update(
+  @ResponseMessage('Product updated successfully')
+  update(
     @Param('id', IdValidationPipe) id: string,
     @Body() updateProductDto: UpdateProductDto,
   ) {
-    const data = await this.productsService.update(+id, updateProductDto);
-
-    return {
-      status: 'success',
-      message: 'Product updated successfully',
-      data,
-    };
+    return this.productsService.update(+id, updateProductDto);
   }
 
   @Delete(':id')
-  async remove(@Param('id', IdValidationPipe) id: string) {
-    await this.productsService.remove(+id);
-
-    return {
-      status: 'success',
-      message: 'Product deleted successfully',
-    };
+  @ResponseMessage('Product deleted successfully')
+  remove(@Param('id', IdValidationPipe) id: string) {
+    return this.productsService.remove(+id);
   }
 }
