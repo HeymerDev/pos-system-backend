@@ -14,6 +14,7 @@ API REST para un sistema de punto de venta (POS) construida con **NestJS**, **Ty
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Modelo de datos](#modelo-de-datos)
 - [API](#api)
+  - [Formato de respuesta](#formato-de-respuesta)
   - [Categorías](#categorías)
   - [Productos](#productos)
   - [Transacciones](#transacciones)
@@ -96,6 +97,10 @@ src/
 ├── config/
 │   └── typeorm.config.ts        # Conexión a PostgreSQL
 ├── common/
+│   ├── decorators/
+│   │   └── response-message/    # @ResponseMessage(): mensaje de la respuesta
+│   ├── interceptors/
+│   │   └── response/            # Envoltorio { status, message, data } + PaginatedResult
 │   └── pipes/
 │       └── id-validation-pipe/  # Valida que los :id sean enteros
 ├── categories/                  # CRUD de categorías
@@ -147,6 +152,29 @@ Base URL: `http://localhost:4000`
 
 Todas las peticiones con cuerpo usan `Content-Type: application/json`. El `ValidationPipe` global tiene `whitelist: true`, así que cualquier propiedad que no esté definida en el DTO se descarta silenciosamente.
 
+### Formato de respuesta
+
+Todas las respuestas exitosas usan el mismo envoltorio, aplicado por un interceptor global (`ResponseInterceptor`):
+
+```json
+{
+  "status": "success",
+  "message": "Product created successfully",
+  "data": {}
+}
+```
+
+| Campo     | Cuándo aparece                                                                 |
+| --------- | ------------------------------------------------------------------------------ |
+| `status`  | Siempre (`"success"`)                                                          |
+| `message` | Solo en endpoints que crean, actualizan, eliminan o registran algo             |
+| `data`    | Siempre, excepto en los `DELETE`, que no devuelven contenido                   |
+| `total`   | Solo en listados paginados (`GET /products`): total de registros sin paginar   |
+
+Los controllers solo devuelven el resultado del servicio; el mensaje se declara con el decorador `@ResponseMessage('...')` y los listados paginados devuelven un `PaginatedResult`.
+
+Las respuestas de error mantienen el formato de NestJS (ver [Errores](#errores)).
+
 ### Categorías
 
 | Método   | Ruta              | Descripción                  |
@@ -177,7 +205,14 @@ Todas las peticiones con cuerpo usan `Content-Type: application/json`. El `Valid
 }
 ```
 
-`GET /categories` y `GET /categories/:id` devuelven la entidad (o el arreglo) directamente, sin envoltorio.
+**Respuesta de `GET /categories`** (`200`)
+
+```json
+{
+  "status": "success",
+  "data": [{ "id": 1, "name": "Bebidas" }]
+}
+```
 
 ### Productos
 
