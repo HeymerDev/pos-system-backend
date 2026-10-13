@@ -10,19 +10,16 @@ import {
 import { TransactionsService } from './transactions.service.js';
 import { CreateTransactionDto } from './dto/create-transaction.dto.js';
 import { UpdateTransactionDto } from './dto/update-transaction.dto.js';
+import { ResponseMessage } from '../common/decorators/response-message/response-message.decorator.js';
 
 @Controller('transactions')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
   @Post()
-  async create(@Body() createTransactionDto: CreateTransactionDto) {
-    await this.transactionsService.create(createTransactionDto);
-
-    return {
-      status: 'success',
-      message: 'Transaction created successfully',
-    };
+  @ResponseMessage('Transaction created successfully')
+  create(@Body() createTransactionDto: CreateTransactionDto) {
+    return this.transactionsService.create(createTransactionDto);
   }
 
   @Get()
