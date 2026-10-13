@@ -11,19 +11,16 @@ import { CategoriesService } from './categories.service.js';
 import { CreateCategoryDto } from './dto/create-category.dto.js';
 import { UpdateCategoryDto } from './dto/update-category.dto.js';
 import { IdValidationPipe } from '../common/pipes/id-validation-pipe/id-validation-pipe.pipe.js';
+import { ResponseMessage } from '../common/decorators/response-message/response-message.decorator.js';
 
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Post()
-  async create(@Body() createCategoryDto: CreateCategoryDto) {
-    const data = await this.categoriesService.create(createCategoryDto);
-    return {
-      status: 'success',
-      message: 'Category created successfully',
-      data,
-    };
+  @ResponseMessage('Category created successfully')
+  create(@Body() createCategoryDto: CreateCategoryDto) {
+    return this.categoriesService.create(createCategoryDto);
   }
 
   @Get()
@@ -40,26 +37,17 @@ export class CategoriesController {
   }
 
   @Patch(':id')
-  async update(
+  @ResponseMessage('Category updated successfully')
+  update(
     @Param('id', IdValidationPipe) id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
-    const data = await this.categoriesService.update(+id, updateCategoryDto);
-
-    return {
-      status: 'success',
-      message: 'Category updated successfully',
-      data,
-    };
+    return this.categoriesService.update(+id, updateCategoryDto);
   }
 
   @Delete(':id')
-  async remove(@Param('id', IdValidationPipe) id: string) {
-    await this.categoriesService.remove(+id);
-
-    return {
-      status: 'success',
-      message: 'Category deleted successfully',
-    };
+  @ResponseMessage('Category deleted successfully')
+  remove(@Param('id', IdValidationPipe) id: string) {
+    return this.categoriesService.remove(+id);
   }
 }
