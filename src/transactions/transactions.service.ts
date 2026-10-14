@@ -16,8 +16,6 @@ export class TransactionsService {
   constructor(
     @InjectRepository(Transaction)
     private readonly transactionRepository: Repository<Transaction>,
-    @InjectRepository(TransactionContent)
-    private readonly transactionContentRepository: Repository<TransactionContent>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
   ) {}
@@ -26,6 +24,7 @@ export class TransactionsService {
     await this.productRepository.manager.transaction(async (entityManager) => {
       const transaction = new Transaction();
       transaction.total = createTransactionDto.total;
+      transaction.contents = [];
 
       for (const contents of createTransactionDto.contents) {
         const product = await entityManager.findOne(Product, {
@@ -51,12 +50,11 @@ export class TransactionsService {
         transactionContent.quantity = contents.quantity;
         transactionContent.price = contents.price;
         transactionContent.product = product;
-        transactionContent.transaction = transaction;
-
-        await entityManager.save(transaction);
-
-        await entityManager.save(transactionContent);
+        transaction.contents.push(transactionContent);
       }
+
+      // Transaction.contents has cascade: true, so this also inserts the contents
+      await entityManager.save(transaction);
     });
   }
 
