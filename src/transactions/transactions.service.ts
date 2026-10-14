@@ -26,9 +26,15 @@ export class TransactionsService {
       transaction.total = createTransactionDto.total;
       transaction.contents = [];
 
-      for (const contents of createTransactionDto.contents) {
+      // Lock products in a consistent order so concurrent sales can't deadlock
+      const items = [...createTransactionDto.contents].sort(
+        (a, b) => a.productId - b.productId,
+      );
+
+      for (const contents of items) {
         const product = await entityManager.findOne(Product, {
           where: { id: contents.productId },
+          lock: { mode: 'pessimistic_write' },
         });
 
         if (!product) {
