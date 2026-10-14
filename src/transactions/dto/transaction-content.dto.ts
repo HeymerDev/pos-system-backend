@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
 
 export class TransactionContentsDto {
   @IsNotEmpty({ message: 'Product ID is not empty' })
@@ -7,6 +7,7 @@ export class TransactionContentsDto {
 
   @IsNotEmpty({ message: 'Quantity is not empty' })
   @IsInt({ message: 'Invalid quantity' }) // Validate quantity too
+  @IsPositive({ message: 'Quantity must be greater than 0' })
   quantity: number;
 
   @IsNotEmpty({ message: 'Price is not empty' })
