@@ -4,7 +4,7 @@ import { BadRequestException, Injectable, ParseIntPipe } from '@nestjs/common';
 export class IdValidationPipe extends ParseIntPipe {
   constructor() {
     super({
-      exceptionFactory: () => new BadRequestException('Invalid category ID'),
+      exceptionFactory: () => new BadRequestException(['Invalid ID']),
     });
   }
 }
