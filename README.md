@@ -123,6 +123,7 @@ erDiagram
     CATEGORY {
         int id PK
         varchar(55) name
+        timestamp deletedAt "borrado lógico"
     }
     PRODUCT {
         int id PK
@@ -131,6 +132,7 @@ erDiagram
         decimal(10_2) price
         int stock "default: 0"
         int categoryId FK
+        timestamp deletedAt "borrado lógico"
     }
     TRANSACTION {
         int id PK
@@ -185,6 +187,8 @@ Las respuestas de error mantienen el formato de NestJS (ver [Errores](#errores))
 | `PATCH`  | `/categories/:id` | Actualizar nombre            |
 | `DELETE` | `/categories/:id` | Eliminar categoría           |
 
+**Eliminar:** es un borrado lógico (se marca `deletedAt` y deja de aparecer en la API). Si la categoría todavía tiene productos activos responde `409` y no se elimina; hay que mover o eliminar esos productos primero.
+
 **Crear / actualizar**
 
 ```json
@@ -223,6 +227,8 @@ Las respuestas de error mantienen el formato de NestJS (ver [Errores](#errores))
 | `GET`    | `/products/:id` | Obtener un producto con su categoría         |
 | `PATCH`  | `/products/:id` | Actualizar producto (campos parciales)       |
 | `DELETE` | `/products/:id` | Eliminar producto                            |
+
+**Eliminar:** es un borrado lógico. El producto deja de aparecer en los listados y ya no se puede vender, pero la fila se conserva para no romper el historial de ventas que lo referencia.
 
 **Crear producto**
 
@@ -329,8 +335,9 @@ Los errores siguen el formato estándar de NestJS:
 | Código | Cuándo ocurre                                                              |
 | ------ | -------------------------------------------------------------------------- |
 | `400`  | Body o query inválidos, `:id` no numérico, stock insuficiente              |
-| `404`  | Categoría, producto o producto de una venta no encontrado                  |
-| `500`  | Error no controlado (por ejemplo, borrar una categoría que tiene productos) |
+| `404`  | Categoría, producto o producto de una venta no encontrado (o eliminado)    |
+| `409`  | Eliminar una categoría que todavía tiene productos activos                 |
+| `500`  | Error no controlado                                                        |
 
 ## Tests
 
