@@ -1,5 +1,6 @@
 import {
   Column,
+  DeleteDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -17,4 +18,7 @@ export class Category {
 
   @OneToMany(() => Product, (product) => product.category, { cascade: true })
   products: Relation<Product[]>;
+
+  @DeleteDateColumn({ select: false })
+  deletedAt?: Date;
 }
