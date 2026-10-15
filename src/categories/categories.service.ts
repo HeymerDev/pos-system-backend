@@ -1,15 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto.js';
 import { UpdateCategoryDto } from './dto/update-category.dto.js';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity.js';
 import { Repository } from 'typeorm';
+import { Product } from '../products/entities/product.entity.js';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
   ) {}
 
   create(createCategoryDto: CreateCategoryDto) {
@@ -39,6 +47,16 @@ export class CategoriesService {
 
   async remove(id: number) {
     const category = await this.findOne(id);
-    await this.categoryRepository.remove(category);
+
+    const products = await this.productRepository.count({
+      where: { category: { id } },
+    });
+    if (products > 0) {
+      throw new ConflictException([
+        `Category with ID ${id} has ${products} products and cannot be deleted`,
+      ]);
+    }
+
+    await this.categoryRepository.softRemove(category);
   }
 }
