@@ -29,25 +29,22 @@ export class CategoriesController {
   }
 
   @Get(':id')
-  findOne(
-    @Param('id', IdValidationPipe)
-    id: string,
-  ) {
-    return this.categoriesService.findOne(+id);
+  findOne(@Param('id', IdValidationPipe) id: number) {
+    return this.categoriesService.findOne(id);
   }
 
   @Patch(':id')
   @ResponseMessage('Category updated successfully')
   update(
-    @Param('id', IdValidationPipe) id: string,
+    @Param('id', IdValidationPipe) id: number,
     @Body() updateCategoryDto: UpdateCategoryDto,
   ) {
-    return this.categoriesService.update(+id, updateCategoryDto);
+    return this.categoriesService.update(id, updateCategoryDto);
   }
 
   @Delete(':id')
   @ResponseMessage('Category deleted successfully')
-  remove(@Param('id', IdValidationPipe) id: string) {
-    return this.categoriesService.remove(+id);
+  remove(@Param('id', IdValidationPipe) id: number) {
+    return this.categoriesService.remove(id);
   }
 }
