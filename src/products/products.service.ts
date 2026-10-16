@@ -20,7 +20,10 @@ export class ProductsService {
       createProductDto.categoryId,
     );
 
-    return this.productRepository.save({ ...createProductDto, category });
+    // INSERT ... RETURNING adds deletedAt even with select: false
+    const { deletedAt: _deletedAt, ...product } =
+      await this.productRepository.save({ ...createProductDto, category });
+    return product;
   }
 
   async findAll(categoryId: number | null, take: number, skip: number) {
