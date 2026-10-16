@@ -20,8 +20,12 @@ export class CategoriesService {
     private readonly productRepository: Repository<Product>,
   ) {}
 
-  create(createCategoryDto: CreateCategoryDto) {
-    return this.categoryRepository.save(createCategoryDto);
+  async create(createCategoryDto: CreateCategoryDto) {
+    await this.ensureNameIsAvailable(createCategoryDto.name);
+    // INSERT ... RETURNING adds deletedAt even with select: false
+    const { deletedAt: _deletedAt, ...category } =
+      await this.categoryRepository.save(createCategoryDto);
+    return category;
   }
 
   findAll() {
@@ -39,6 +43,9 @@ export class CategoriesService {
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
     const category = await this.findOne(id);
+    if (updateCategoryDto.name) {
+      await this.ensureNameIsAvailable(updateCategoryDto.name, id);
+    }
     Object.assign(category, updateCategoryDto);
     await this.categoryRepository.save(category);
 
@@ -58,5 +65,12 @@ export class CategoriesService {
     }
 
     await this.categoryRepository.softRemove(category);
+  }
+
+  private async ensureNameIsAvailable(name: string, currentId?: number) {
+    const existing = await this.categoryRepository.findOneBy({ name });
+    if (existing && existing.id !== currentId) {
+      throw new ConflictException([`Category ${name} already exists`]);
+    }
   }
 }
