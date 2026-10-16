@@ -197,7 +197,7 @@ Las respuestas de error mantienen el formato de NestJS (ver [Errores](#errores))
 
 | Campo  | Tipo   | Reglas                  |
 | ------ | ------ | ----------------------- |
-| `name` | string | Requerido, no vacío     |
+| `name` | string | Requerido, no vacío, único entre las categorías activas (`409` si ya existe) |
 
 **Respuesta de `POST /categories`** (`201`)
 
@@ -336,7 +336,7 @@ Los errores siguen el formato estándar de NestJS:
 | ------ | -------------------------------------------------------------------------- |
 | `400`  | Body o query inválidos, `:id` no numérico, stock insuficiente              |
 | `404`  | Categoría, producto o producto de una venta no encontrado (o eliminado)    |
-| `409`  | Eliminar una categoría que todavía tiene productos activos                 |
+| `409`  | Eliminar una categoría con productos activos, o crear/renombrar una categoría con un nombre que ya existe |
 | `500`  | Error no controlado                                                        |
 
 ## Tests
