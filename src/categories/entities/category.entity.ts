@@ -2,6 +2,7 @@ import {
   Column,
   DeleteDateColumn,
   Entity,
+  Index,
   OneToMany,
   PrimaryGeneratedColumn,
   type Relation,
@@ -13,6 +14,8 @@ export class Category {
   @PrimaryGeneratedColumn()
   id: number;
 
+  // Unique only among active categories, so a deleted name can be reused
+  @Index({ unique: true, where: '"deletedAt" IS NULL' })
   @Column({ type: 'varchar', length: 55, nullable: false })
   name: string;
 
