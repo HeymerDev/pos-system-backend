@@ -254,11 +254,13 @@ En `PATCH` todos los campos son opcionales; si se envía `categoryId`, se valida
 
 **Listar con filtros** — `GET /products?category_id=1&total=10&offset=0`
 
-| Query param   | Default | Descripción                         |
-| ------------- | ------- | ----------------------------------- |
-| `category_id` | —       | Filtra por categoría                |
-| `total`       | `10`    | Cantidad de resultados (`take`)     |
-| `offset`      | `0`     | Resultados a saltar (`skip`)        |
+| Query param   | Default | Reglas             | Descripción                         |
+| ------------- | ------- | ------------------ | ----------------------------------- |
+| `category_id` | —       | Entero, mínimo 1   | Filtra por categoría                |
+| `total`       | `10`    | Entero, de 1 a 100 | Cantidad de resultados (`take`)     |
+| `offset`      | `0`     | Entero, mínimo 0   | Resultados a saltar (`skip`)        |
+
+Si un valor no cumple las reglas, la API responde `400`.
 
 Los productos se ordenan por `id` descendente.
 
