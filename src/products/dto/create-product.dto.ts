@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  Min,
 } from 'class-validator';
 
 export class CreateProductDto {
@@ -23,6 +24,7 @@ export class CreateProductDto {
 
   @IsNotEmpty({ message: 'The stock is required' })
   @IsNumber({ maxDecimalPlaces: 0 }, { message: 'The stock must be a int' })
+  @Min(0, { message: 'The stock cannot be negative' })
   stock: number;
 
   @IsNotEmpty({ message: 'The category ID is required' })
