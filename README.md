@@ -97,6 +97,8 @@ src/
 ├── config/
 │   └── typeorm.config.ts        # Conexión a PostgreSQL
 ├── common/
+│   ├── filters/
+│   │   └── database-exception/  # Traduce errores de PostgreSQL a 400/409
 │   ├── decorators/
 │   │   └── response-message/    # @ResponseMessage(): mensaje de la respuesta
 │   ├── interceptors/
@@ -247,7 +249,7 @@ Las respuestas de error mantienen el formato de NestJS (ver [Errores](#errores))
 | `name`       | string | Requerido                                        |
 | `image_url`  | string | Opcional (default `default.svg`)                 |
 | `price`      | number | Requerido, positivo, máx. 2 decimales            |
-| `stock`      | number | Requerido, entero                                |
+| `stock`      | number | Requerido, entero, mínimo 0                      |
 | `categoryId` | number | Requerido, entero, la categoría debe existir     |
 
 En `PATCH` todos los campos son opcionales; si se envía `categoryId`, se valida que la categoría exista.
@@ -336,10 +338,12 @@ Los errores siguen el formato estándar de NestJS:
 
 | Código | Cuándo ocurre                                                              |
 | ------ | -------------------------------------------------------------------------- |
-| `400`  | Body o query inválidos, `:id` no numérico, stock insuficiente              |
+| `400`  | Body o query inválidos, `:id` no numérico, stock insuficiente, número fuera del rango de la columna |
 | `404`  | Categoría, producto o producto de una venta no encontrado (o eliminado)    |
 | `409`  | Eliminar una categoría con productos activos, o crear/renombrar una categoría con un nombre que ya existe |
 | `500`  | Error no controlado                                                        |
+
+Los errores de PostgreSQL más comunes los traduce un filtro global (`DatabaseExceptionFilter`) a este mismo formato: valor duplicado → `409`, registro en uso → `409`, referencia inexistente o número fuera de rango → `400`. Cualquier otro error de base de datos sigue respondiendo `500`.
 
 ## Tests
 
