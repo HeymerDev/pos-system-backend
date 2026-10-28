@@ -23,7 +23,11 @@ export class TransactionsService {
   async create(createTransactionDto: CreateTransactionDto) {
     await this.productRepository.manager.transaction(async (entityManager) => {
       const transaction = new Transaction();
-      transaction.total = createTransactionDto.total;
+      const total = createTransactionDto.contents.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
+      transaction.total = total;
       transaction.contents = [];
 
       // Lock products in a consistent order so concurrent sales can't deadlock
